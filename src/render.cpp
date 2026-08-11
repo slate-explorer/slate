@@ -2,6 +2,12 @@
 #include <windows.h>
 #include "render.hpp"
 
+#define HEX_RGB(hex) RGB( \
+        ((hex >> 16) & 0xFF), \
+        ((hex >> 8) & 0xFF), \
+        (hex & 0xFF) \
+    )
+
 struct WindowData {
     bool running = true;
     HWND window = nullptr;
@@ -52,11 +58,13 @@ namespace { // private
 }
 
 namespace render { // public
+
     void openWindow(const std::wstring name, int width, int height) {
         WNDCLASSW wc = {sizeof(WNDCLASSW)};
         
         wc.hCursor = LoadCursorW(0, MAKEINTRESOURCEW(32512)); // the cursor
         wc.hInstance = GetModuleHandleW(0); // current program instance
+        wc.hbrBackground = CreateSolidBrush(HEX_RGB(0x1e1e1e)); // background
         wc.lpszClassName = L"SlateClass"; // class name
         wc.style = CS_HREDRAW | CS_VREDRAW; // refresh on resize
         wc.lpfnWndProc = windowTick; // call back function
@@ -69,8 +77,7 @@ namespace render { // public
         HWND window = CreateWindowW(
             wc.lpszClassName, // name of group
             name.c_str(), // title
-            WS_OVERLAPPEDWINDOW | // normal mode
-            WS_VISIBLE, // ensure vibility
+            WS_OVERLAPPEDWINDOW, // normal mode
             CW_USEDEFAULT, // pos x
             CW_USEDEFAULT, // pos y
             width, // size x
@@ -80,6 +87,10 @@ namespace render { // public
             GetModuleHandleW(0), // current program instance
             0 // L-Params
         );
+
+        // finished loading
+        ShowWindow(window, SW_SHOW);
+        UpdateWindow(window);
 
         winDat.window = window;
     }
@@ -98,5 +109,9 @@ namespace render { // public
 
     void exit() {
         DestroyWindow(winDat.window);
+    }
+
+    void drawText(std::wstring text) {
+
     }
 }
