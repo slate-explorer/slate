@@ -3,6 +3,8 @@
 #include <string>
 
 namespace render {
-    void openWindow(const std::string name, int width, int height);
-    
+    void openWindow(const std::wstring name, int width, int height);
+    void tickWindow();
+    bool isRunning();
+    void exit();
 }

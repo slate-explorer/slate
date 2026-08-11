@@ -2,9 +2,11 @@
 #include "render.hpp"
 
 int main() {
-    std::cout << "Opening Slate" << std::endl;
+    render::openWindow(L"slate", 500, 500);
 
-    render::openWindow("Slate", 500, 500);
+    while (render::isRunning()) {
+        render::tickWindow();
+    }
 
     return 0;
-}
+} 
