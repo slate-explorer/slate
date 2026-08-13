@@ -27,3 +27,5 @@ target_include_directories(Slate
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 ) 
+
+target_compile_options(Slate PRIVATE /utf-8)

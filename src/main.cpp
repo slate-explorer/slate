@@ -2,6 +2,7 @@
 #include "render.hpp"
 
 int main() {
+    render::setup();
     render::openWindow(L"slate", 500, 500);
 
     while (render::isRunning()) {
