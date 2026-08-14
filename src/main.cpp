@@ -2,12 +2,17 @@
 #include "render.hpp"
 
 int main() {
-    render::setup();
-    render::openWindow(L"slate", 500, 500);
-
-    while (render::isRunning()) {
-        render::tickWindow();
+    if (!render::initialise()) {
+        std::cerr << "Terminal init failed\n";
+        return 1;
     }
+
+    while (true) {
+        if (render::needsRedraw())
+            render::draw();
+    }
+
+    render::shutdown();
 
     return 0;
 } 

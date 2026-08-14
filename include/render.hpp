@@ -11,13 +11,10 @@
     )
 
 namespace render {
-    extern COLORREF backgroundColor;
-    extern COLORREF textColor;
-     
-    void setup();
-    void openWindow(const std::wstring name, int width, int height);
-    void tickWindow();
-    bool isRunning();
-    void exit();
-    void drawText(std::wstring text, unsigned int line);
+    bool initialise();
+    void clear();
+    void draw();
+    bool needsRedraw();
+    void shutdown();
+    inline void dirty();
 }
