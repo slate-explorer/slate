@@ -6,6 +6,7 @@
 
 #pragma region MP-Imports
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #else
 #include <sys/ioctl.h>
@@ -14,18 +15,13 @@
 #pragma endregion
 
 #include "render.hpp"
-
-struct Entry {
-    bool isDir = false;
-    std::wstring filePath;
-
-};
+#include "filesystem.hpp"
 
 struct WindowData {
     unsigned int width = 0;
     unsigned int height = 0;
 
-    std::vector<Entry> entries;
+    std::vector<filesystem::Entry> entries;
 
     bool dirty = true;
 };
@@ -94,6 +90,80 @@ namespace { // private
         for (int i = 0; i < amount; ++i)
             std::cout << text;
     }
+
+    struct DrawEntries {
+        unsigned int cursorPos;
+        std::vector<filesystem::Entry> entries;
+    };
+
+    DrawEntries getEntriesToDraw(
+        const std::vector<filesystem::Entry>& entries,
+        unsigned int cursor,
+        unsigned int rah
+    ) {
+        DrawEntries result{};
+
+        if (entries.empty() || rah == 0)
+            return result;
+
+        // Work out where the visible section starts
+        unsigned int offset = 0;
+
+        if (entries.size() > rah) {
+            const unsigned int half = rah / 2;
+
+            if (cursor > half)
+                offset = cursor - half;
+
+            if (offset > entries.size() - rah)
+                offset = entries.size() - rah;
+        }
+
+        // Relative cursor position
+        result.cursorPos = cursor - offset;
+
+        unsigned int entryAmt = static_cast<unsigned int>(entries.size());
+
+        // Entries to draw
+        const unsigned int end = std::min(
+            offset + rah,
+            entryAmt
+        );
+
+        result.entries.assign(
+            entries.begin() + offset,
+            entries.begin() + end
+        );
+
+        return result;
+    }
+
+    void drawEntries(unsigned int rah) {
+        DrawEntries toDraw = getEntriesToDraw(
+            filesystem::getEntries(),
+            0, // input::cursor.pos
+            rah
+        );
+
+        filesystem::sortEntries(toDraw.entries);
+
+        for (unsigned int i = 0; i < rah; i++) {
+            if (i >= toDraw.entries.size()) {
+                if (i > 0)
+                    std::cout << "\n";
+                continue;
+            }
+
+            const auto& entry = toDraw.entries[i];
+
+            std::cout << (i == toDraw.cursorPos ? "> " : "  ");
+            std::cout << entry.filePath.filename().string();
+            std::cout << (entry.isDir ? "\\" : ""); 
+
+            if (i + 1 < rah)
+                std::cout << "\n";
+        }
+    }
 }
 
 namespace render { // public
@@ -148,10 +218,14 @@ namespace render { // public
         clear();
 
         // begin title
-        std::string cwd = "C:\\Here";// filesystem::dat::cwd;
+        std::string cwd = filesystem::cwd.string();
         std::string name = "Slate";
         std::cout << name << rep(" ", winDat.width - (name.length() + cwd.length())) << cwd << "\n";
         hr();
+
+        // draw files
+        drawEntries(winDat.height - (3));
+
     }
 
     bool needsRedraw() {

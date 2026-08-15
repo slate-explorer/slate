@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Slate
+project(slate
     VERSION 0.1.0
     DESCRIPTION "A compact, lightweight cross-platform file explorer"
     LANGUAGES CXX
@@ -18,14 +18,14 @@ file(GLOB_RECURSE SLATE_SOURCES
 )
 
 # Build executable
-add_executable(Slate
+add_executable(slate
     ${SLATE_SOURCES}
 )
 
 # Include directories
-target_include_directories(Slate
+target_include_directories(slate
     PRIVATE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 ) 
 
-target_compile_options(Slate PRIVATE /utf-8)
+target_compile_options(slate PRIVATE /utf-8)
