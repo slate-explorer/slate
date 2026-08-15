@@ -224,8 +224,12 @@ namespace render { // public
         hr();
 
         // draw files
-        drawEntries(winDat.height - (3));
+        drawEntries(winDat.height - (4));
+        std::cout << "\n";
 
+        // search bar
+        hr();
+        std::cout << ">> ";
     }
 
     bool needsRedraw() {
