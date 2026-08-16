@@ -1,5 +1,6 @@
 #include <iostream>
 #include "render.hpp"
+#include "input.hpp"
 
 int main() {
     if (!render::initialise()) {
@@ -7,9 +8,22 @@ int main() {
         return 1;
     }
 
-    while (true) {
+
+    bool running = true;
+
+    while (running) {
         if (render::needsRedraw())
             render::draw();
+
+        input::process();
+        
+        input::Event event;
+        while (input::poll(event)) {
+            if (event.key == input::Key::Character) {
+                input::commandBar += event.character;
+                render::dirtyCMD();
+            }
+        }
     }
 
     render::shutdown();

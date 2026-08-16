@@ -16,5 +16,6 @@ namespace render {
     void draw();
     bool needsRedraw();
     void shutdown();
-    inline void dirty();
+    void dirty();
+    void dirtyCMD();
 }

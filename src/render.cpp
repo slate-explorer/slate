@@ -16,6 +16,7 @@
 
 #include "render.hpp"
 #include "filesystem.hpp"
+#include "input.hpp"
 
 struct WindowData {
     unsigned int width = 0;
@@ -24,14 +25,15 @@ struct WindowData {
     std::vector<filesystem::Entry> entries;
 
     bool dirty = true;
+    bool dirtyCMD = false;
 };
 
 WindowData winDat;
 
 namespace { // private
 #ifdef _WIN32
-    HANDLE output = nullptr;
-    HANDLE input = nullptr;
+    HANDLE handle_output = nullptr;
+    HANDLE handle_input = nullptr;
 
     DWORD originalOutputMode = 0;
     DWORD originalInputMode = 0;
@@ -173,24 +175,24 @@ namespace render { // public
         SetConsoleOutputCP(CP_UTF8);
         SetConsoleCP(CP_UTF8);
 
-        output = GetStdHandle(STD_OUTPUT_HANDLE);
-        input = GetStdHandle(STD_INPUT_HANDLE);
+        handle_output = GetStdHandle(STD_OUTPUT_HANDLE);
+        handle_input = GetStdHandle(STD_INPUT_HANDLE);
 
-        if (output == INVALID_HANDLE_VALUE ||
-            input == INVALID_HANDLE_VALUE)
+        if (handle_output == INVALID_HANDLE_VALUE ||
+            handle_input == INVALID_HANDLE_VALUE)
             return false;
 
-        if (!GetConsoleMode(output, &originalOutputMode))
+        if (!GetConsoleMode(handle_output, &originalOutputMode))
             return false;
 
-        if (!GetConsoleMode(input, &originalInputMode))
+        if (!GetConsoleMode(handle_input, &originalInputMode))
             return false;
 
         // Enable ANSI/VT output
         DWORD outputMode = originalOutputMode;
         outputMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 
-        if (!SetConsoleMode(output, outputMode))
+        if (!SetConsoleMode(handle_output, outputMode))
             return false;
 #endif
 
@@ -213,6 +215,12 @@ namespace render { // public
     }
 
     void draw() {
+        if (winDat.dirtyCMD) { // just cmd needs redraw
+            std::wcout << L"\r\x1b[2K>> " << input::commandBar;
+            winDat.dirtyCMD = false;
+            return;
+        }
+
         // Box Outlines: ┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼
         // clear screen
         clear();
@@ -230,6 +238,7 @@ namespace render { // public
         // search bar
         hr();
         std::cout << ">> ";
+        std::wcout << input::commandBar;
     }
 
     bool needsRedraw() {
@@ -238,6 +247,7 @@ namespace render { // public
 
         if (winDat.dirty) {
             winDat.dirty = false;
+            winDat.dirtyCMD = false;
             return true;
         }
            
@@ -247,6 +257,13 @@ namespace render { // public
     void dirty() {
         winDat.dirty = true;
     }
+
+
+    void dirtyCMD() {
+        winDat.dirty = true;
+        winDat.dirtyCMD = true;
+    }
+
 
     void shutdown() {
         std::cout << "\x1b[0m";       // reset colours/styles
@@ -261,8 +278,8 @@ namespace render { // public
 
 #ifdef _WIN32
         // Restore Windows console state
-        SetConsoleMode(output, originalOutputMode);
-        SetConsoleMode(input, originalInputMode);
+        SetConsoleMode(handle_output, originalOutputMode);
+        SetConsoleMode(handle_input, originalInputMode);
 #endif
     }
 }
