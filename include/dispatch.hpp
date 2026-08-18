@@ -1,0 +1,3 @@
+namespace dispatch {
+	int dispatchCMD();
+}

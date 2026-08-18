@@ -1,6 +1,7 @@
 #include <iostream>
 #include "render.hpp"
 #include "input.hpp"
+#include "dispatch.hpp"
 
 int main() {
     if (!render::initialise()) {
@@ -23,6 +24,15 @@ int main() {
                 input::commandBar += event.character;
                 render::dirtyCMD();
             }
+            else if (event.key == input::Key::Enter) {
+                int res = dispatch::dispatchCMD();
+
+                if (res < 0) {
+                    running = false;
+                }
+            }
+
+
         }
     }
 
